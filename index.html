@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ফ্রেম আর্কাইভ — Photo Find Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #141311;
+    --panel: #1c1a17;
+    --panel-2: #221f1b;
+    --border: #3a352c;
+    --text: #f3ede0;
+    --muted: #a89d8a;
+    --amber: #e8973a;
+    --safelight: #c1442e;
+    --radius: 2px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top, #1c1a16 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:'Hind Siliguri','IBM Plex Mono',sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace; letter-spacing:0.02em;}
+  .display{font-family:'Fraunces', serif;}
+
+  /* Sprocket filmstrip border */
+  .sprockets{
+    height:22px;
+    background-image: repeating-linear-gradient(90deg, var(--bg) 0 10px, transparent 10px 22px);
+    position:relative;
+  }
+  .sprockets::before{
+    content:"";
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(90deg,
+      transparent 0, transparent 4px,
+      #0000 4px);
+  }
+  .sprocket-row{
+    display:flex; gap:14px; padding:6px 20px; background:#0f0e0c;
+    overflow:hidden; border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  }
+  .sprocket-row span{
+    width:9px; height:9px; min-width:9px; border-radius:2px; background:var(--bg);
+    box-shadow: inset 0 0 0 1px #000;
+  }
+
+  header.hero{
+    padding:56px 20px 40px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+  }
+  header.hero .eyebrow{
+    color:var(--amber); font-size:12px; text-transform:uppercase;
+    letter-spacing:0.28em; margin-bottom:14px;
+  }
+  header.hero h1{
+    font-size:clamp(32px,5vw,56px); margin:0 0 12px; font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  header.hero p{
+    color:var(--muted); max-width:520px; margin:0 auto; font-size:15px; line-height:1.7;
+  }
+
+  main{max-width:1040px; margin:0 auto; padding:44px 20px 100px;}
+
+  .panels{display:grid; grid-template-columns:1fr; gap:22px; margin-bottom:52px;}
+  @media(min-width:820px){ .panels{grid-template-columns: 1fr 1.2fr;} }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:26px;
+    position:relative;
+  }
+  .card::before{
+    content: attr(data-frame);
+    position:absolute; top:-11px; left:20px;
+    background:var(--bg);
+    padding:0 8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; color:var(--amber); letter-spacing:0.1em;
+  }
+  .card h2{margin:6px 0 18px; font-family:'Fraunces',serif; font-weight:600; font-size:20px;}
+
+  label{display:block; font-size:12.5px; color:var(--muted); margin:16px 0 6px; letter-spacing:0.02em;}
+  label:first-of-type{margin-top:0;}
+  input[type=text], input[type=number], input[type=search]{
+    width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    padding:11px 12px; border-radius:var(--radius); font-size:14.5px; font-family:inherit;
+    outline:none;
+  }
+  input:focus{border-color:var(--amber);}
+  input[type=file]{
+    width:100%; color:var(--muted); font-size:13px;
+    background:var(--panel-2); border:1px dashed var(--border); border-radius:var(--radius);
+    padding:16px 12px; cursor:pointer;
+  }
+
+  button{
+    font-family:'IBM Plex Mono',monospace; letter-spacing:0.04em; font-size:13px;
+    border:1px solid var(--amber); background:transparent; color:var(--amber);
+    padding:11px 18px; border-radius:var(--radius); cursor:pointer;
+    text-transform:uppercase; transition:.15s;
+  }
+  button:hover{background:var(--amber); color:#141311;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  button.primary{background:var(--amber); color:#141311;}
+  button.primary:hover{background:#f2a94e;}
+
+  .upload-btn-row{display:flex; align-items:center; gap:14px; margin-top:20px;}
+  .status{font-size:13px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+  .status.err{color:var(--safelight);}
+  .status.ok{color:#7fbf6a;}
+
+  .search-row{display:flex; gap:10px;}
+  .search-row input{flex:1;}
+
+  section.results{margin-top:10px;}
+  .results-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px; flex-wrap:wrap; gap:8px;}
+  .results-head h3{font-family:'Fraunces',serif; font-weight:600; font-size:18px; margin:0;}
+  .results-head span{color:var(--muted); font-size:12.5px; font-family:'IBM Plex Mono',monospace;}
+
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); gap:18px;
+  }
+  .frame{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .frame .neg{
+    background:#0f0e0c; padding:6px;
+  }
+  .frame img{width:100%; display:block; aspect-ratio:4/3; object-fit:cover; border-radius:1px;}
+  .frame .meta{padding:12px 14px 14px;}
+  .frame .num{font-family:'IBM Plex Mono',monospace; color:var(--amber); font-size:12px; letter-spacing:0.06em;}
+  .frame .tags{color:var(--muted); font-size:12.5px; margin:6px 0 12px; line-height:1.5; min-height:18px;}
+  .frame a.dl{
+    display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text);
+    text-decoration:none; border:1px solid var(--border); padding:7px 12px; border-radius:var(--radius);
+    letter-spacing:0.04em;
+  }
+  .frame a.dl:hover{border-color:var(--amber); color:var(--amber);}
+
+  .empty{
+    text-align:center; padding:50px 20px; color:var(--muted); font-size:14px;
+    border:1px dashed var(--border); border-radius:var(--radius);
+  }
+
+  footer{
+    text-align:center; padding:30px 20px 50px; color:var(--muted); font-size:12px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  footer a{color:var(--amber); text-decoration:none;}
+
+  .config-warning{
+    max-width:1040px; margin:20px auto 0; padding:16px 20px;
+    background:#2a1c14; border:1px solid var(--safelight); border-radius:var(--radius);
+    color:#f0c8ba; font-size:13px; line-height:1.6;
+  }
+  .config-warning code{background:#1c1210; padding:1px 6px; border-radius:2px; font-family:'IBM Plex Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="sprocket-row">
+  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<header class="hero">
+  <div class="eyebrow mono">Public Photo Archive</div>
+  <h1 class="display">ফ্রেম আর্কাইভ</h1>
+  <p>যেকেউ ছবি জমা রাখতে পারবেন এখানে, আর একটা নির্ধারিত <strong>ফ্রেম নাম্বার</strong> অথবা <strong>কীওয়ার্ড</strong> দিয়ে যেকেউ পরে সেটা খুঁজে ডাউনলোড করতে পারবেন।</p>
+</header>
+
+<div id="configWarning" class="config-warning" style="display:none;">
+  ⚠️ এই টুলটা এখনো চালু করা যায়নি — <code>index.html</code> ফাইলের শুরুর দিকে <code>IMGBB_API_KEY</code> ও <code>APPS_SCRIPT_URL</code> এখনো বসানো হয়নি। README.md ফাইলে ধাপে ধাপে সেটআপ নির্দেশনা দেওয়া আছে।
+</div>
+
+<main>
+  <div class="panels">
+    <div class="card" data-frame="UPLOAD">
+      <h2>নতুন ছবি জমা দিন</h2>
+      <label for="fileInput">ছবি বেছে নিন</label>
+      <input type="file" id="fileInput" accept="image/*" />
+
+      <label for="keywordsInput">কীওয়ার্ড (কমা দিয়ে আলাদা করুন)</label>
+      <input type="text" id="keywordsInput" placeholder="যেমনঃ বিয়ে, রাজশাহী, পরিবার" />
+
+      <div class="upload-btn-row">
+        <button class="primary" id="uploadBtn">জমা দিন</button>
+        <span class="status" id="uploadStatus"></span>
+      </div>
+    </div>
+
+    <div class="card" data-frame="SEARCH">
+      <h2>ছবি খুঁজুন</h2>
+      <label for="searchInput">ফ্রেম নাম্বার বা কীওয়ার্ড লিখুন</label>
+      <div class="search-row">
+        <input type="search" id="searchInput" placeholder="যেমনঃ 014 অথবা রাজশাহী" />
+        <button id="searchBtn">খুঁজুন</button>
+      </div>
+      <label style="margin-top:18px;">অথবা</label>
+      <button id="showAllBtn" style="width:100%;">সব ছবি দেখুন</button>
+    </div>
+  </div>
+
+  <section class="results">
+    <div class="results-head">
+      <h3>ফলাফল</h3>
+      <span id="resultCount" class="mono"></span>
+    </div>
+    <div id="grid" class="grid"></div>
+    <div id="emptyMsg" class="empty" style="display:none;">এখনো কিছু পাওয়া যায়নি। উপরে থেকে খুঁজুন বা নতুন ছবি জমা দিন।</div>
+  </section>
+</main>
+
+<footer>
+  Frame Archive — একটা পাবলিক, ওপেন কমিউনিটি ফটো আর্কাইভ
+</footer>
+
+<script type="module">
+  // ================= CONFIGURE THESE TWO THINGS =================
+  // 1) Get a free key at https://api.imgbb.com/  (no card needed)
+  const IMGBB_API_KEY = "PASTE_YOUR_IMGBB_API_KEY_HERE";
+
+  // 2) Deploy the AppsScript.gs file as a Google Apps Script Web App
+  //    (steps in README.md) and paste the deployment URL here.
+  //    It looks like: https://script.google.com/macros/s/AKfycb.../exec
+  const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+  // =================================================================
+
+  const notConfigured =
+    IMGBB_API_KEY.includes("PASTE") || APPS_SCRIPT_URL.includes("PASTE");
+
+  if (notConfigured) {
+    document.getElementById("configWarning").style.display = "block";
+  }
+
+  const fileInput = document.getElementById("fileInput");
+  const keywordsInput = document.getElementById("keywordsInput");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const uploadStatus = document.getElementById("uploadStatus");
+  const searchInput = document.getElementById("searchInput");
+  const searchBtn = document.getElementById("searchBtn");
+  const showAllBtn = document.getElementById("showAllBtn");
+  const grid = document.getElementById("grid");
+  const emptyMsg = document.getElementById("emptyMsg");
+  const resultCount = document.getElementById("resultCount");
+
+  function setStatus(msg, kind) {
+    uploadStatus.textContent = msg;
+    uploadStatus.className = "status" + (kind ? " " + kind : "");
+  }
+
+  function renderResults(photos) {
+    grid.innerHTML = "";
+    if (!photos.length) {
+      emptyMsg.style.display = "block";
+      resultCount.textContent = "";
+      return;
+    }
+    emptyMsg.style.display = "none";
+    resultCount.textContent = photos.length + " টি ফ্রেম";
+    for (const p of photos) {
+      const el = document.createElement("div");
+      el.className = "frame";
+      el.innerHTML = `
+        <div class="neg"><img src="${p.imageUrl}" alt="frame ${p.number}" loading="lazy"/></div>
+        <div class="meta">
+          <div class="num">FRM-${String(p.number).padStart(4,"0")}</div>
+          <div class="tags">${(p.keywords||[]).join(", ")}</div>
+          <a class="dl" href="${p.imageUrl}" download target="_blank" rel="noopener">ডাউনলোড</a>
+        </div>`;
+      grid.appendChild(el);
+    }
+  }
+
+  uploadBtn.addEventListener("click", async () => {
+    if (notConfigured) { setStatus("সেটআপ এখনো সম্পূর্ণ হয়নি (README.md দেখুন)।", "err"); return; }
+    const file = fileInput.files[0];
+    if (!file) { setStatus("প্রথমে একটা ছবি বেছে নিন।", "err"); return; }
+
+    uploadBtn.disabled = true;
+    setStatus("ছবি আপলোড হচ্ছে...", "");
+
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(",")[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+
+      const form = new FormData();
+      form.append("image", base64);
+
+      const resp = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: form
+      });
+      const data = await resp.json();
+      if (!data.success) throw new Error(data.error?.message || "imgbb আপলোড ব্যর্থ হয়েছে");
+
+      const imageUrl = data.data.url;
+      const keywords = keywordsInput.value
+        .split(",")
+        .map(k => k.trim().toLowerCase())
+        .filter(Boolean);
+
+      const saveResp = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ imageUrl, keywords })
+      });
+      const saveData = await saveResp.json();
+      if (!saveData.success) throw new Error(saveData.error || "সেভ করা যায়নি");
+
+      setStatus(`জমা হয়েছে ✓ ফ্রেম নাম্বার: ${String(saveData.number).padStart(4,"0")}`, "ok");
+      fileInput.value = "";
+      keywordsInput.value = "";
+    } catch (e) {
+      console.error(e);
+      setStatus("সমস্যা হয়েছে: " + e.message, "err");
+    } finally {
+      uploadBtn.disabled = false;
+    }
+  });
+
+  async function runSearch(term) {
+    if (notConfigured) return;
+    term = term.trim();
+    if (!term) { renderResults([]); return; }
+
+    const mode = /^\d+$/.test(term) ? "number" : "keyword";
+    const url = `${APPS_SCRIPT_URL}?mode=${mode}&term=${encodeURIComponent(term.toLowerCase())}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    renderResults(data.success ? data.results : []);
+  }
+
+  async function showAll() {
+    if (notConfigured) return;
+    const resp = await fetch(`${APPS_SCRIPT_URL}?mode=all`);
+    const data = await resp.json();
+    renderResults(data.success ? data.results : []);
+  }
+
+  searchBtn.addEventListener("click", () => runSearch(searchInput.value));
+  searchInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(searchInput.value); });
+  showAllBtn.addEventListener("click", showAll);
+
+  if (!notConfigured) showAll();
+</script>
+
+</body>
+</html>
