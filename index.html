@@ -233,16 +233,16 @@
 <script type="module">
   // ================= CONFIGURE THESE TWO THINGS =================
   // 1) Get a free key at https://api.imgbb.com/  (no card needed)
-  const IMGBB_API_KEY = "PASTE_YOUR_IMGBB_API_KEY_HERE";
+  const IMGBB_API_KEY = "93c9ef15ebdeb2a87cd4d935298b254b";
 
   // 2) Deploy the AppsScript.gs file as a Google Apps Script Web App
   //    (steps in README.md) and paste the deployment URL here.
   //    It looks like: https://script.google.com/macros/s/AKfycb.../exec
-  const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiaYNIFJrL6lvfNxQt7T6Rv7EshXgJ59SKKvOXKHNDZmk9qzkkfqIkp2AacXkFpXzA/exec";
   // =================================================================
 
   const notConfigured =
-    IMGBB_API_KEY.includes("PASTE") || APPS_SCRIPT_URL.includes("PASTE");
+    IMGBB_API_KEY.includes("93c9ef15ebdeb2a87cd4d935298b254b") || APPS_SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbxiaYNIFJrL6lvfNxQt7T6Rv7EshXgJ59SKKvOXKHNDZmk9qzkkfqIkp2AacXkFpXzA/exec");
 
   if (notConfigured) {
     document.getElementById("configWarning").style.display = "block";
