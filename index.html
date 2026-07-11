@@ -196,7 +196,7 @@
       <input type="file" id="fileInput" accept="image/*" />
 
       <label for="keywordsInput">কীওয়ার্ড (কমা দিয়ে আলাদা করুন)</label>
-      <input type="text" id="keywordsInput" placeholder="যেমনঃ মোবাইল, নাম, ঠিকানা" />
+      <input type="text" id="keywordsInput" placeholder="যেমনঃ বিয়ে, রাজশাহী, পরিবার" />
 
       <div class="upload-btn-row">
         <button class="primary" id="uploadBtn">জমা দিন</button>
@@ -208,7 +208,7 @@
       <h2>ছবি খুঁজুন</h2>
       <label for="searchInput">ফ্রেম নাম্বার বা কীওয়ার্ড লিখুন</label>
       <div class="search-row">
-        <input type="search" id="searchInput" placeholder="যেমনঃ মোবাইল, নাম, ঠিকানা" />
+        <input type="search" id="searchInput" placeholder="যেমনঃ 014 অথবা রাজশাহী" />
         <button id="searchBtn">খুঁজুন</button>
       </div>
       <label style="margin-top:18px;">অথবা</label>
@@ -281,11 +281,40 @@
         <div class="meta">
           <div class="num">FRM-${String(p.number).padStart(4,"0")}</div>
           <div class="tags">${(p.keywords||[]).join(", ")}</div>
-          <a class="dl" href="${p.imageUrl}" download target="_blank" rel="noopener">ডাউনলোড</a>
+          <a class="dl" href="#" data-url="${p.imageUrl}" data-num="${p.number}">ডাউনলোড</a>
         </div>`;
       grid.appendChild(el);
     }
   }
+
+  grid.addEventListener("click", async (e) => {
+    const link = e.target.closest("a.dl");
+    if (!link) return;
+    e.preventDefault();
+
+    const originalText = link.textContent;
+    link.textContent = "নামছে...";
+
+    try {
+      const resp = await fetch(link.dataset.url);
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `frame-${String(link.dataset.num).padStart(4,"0")}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error(err);
+      // fallback: imgbb ব্লক করলে বা fetch ব্যর্থ হলে নতুন ট্যাবে খুলে দিন
+      window.open(link.dataset.url, "_blank", "noopener");
+    } finally {
+      link.textContent = originalText;
+    }
+  });
 
   uploadBtn.addEventListener("click", async () => {
     if (notConfigured) { setStatus("সেটআপ এখনো সম্পূর্ণ হয়নি (README.md দেখুন)।", "err"); return; }
