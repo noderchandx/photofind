@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FindPhoto Tool</title>
+<title>ফ্রেম আর্কাইভ — Photo Find Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
@@ -196,7 +196,7 @@
 
 <header class="hero">
   <div class="eyebrow mono">Public Photo Archive</div>
-  <h1 class="display">FindPhoto</h1>
+  <h1 class="display">ফ্রেম আর্কাইভ</h1>
   <p>যেকেউ ছবি জমা রাখতে পারবেন এখানে, আর একটা নির্ধারিত <strong>ফ্রেম নাম্বার</strong> অথবা <strong>কীওয়ার্ড</strong> দিয়ে যেকেউ পরে সেটা খুঁজে ডাউনলোড করতে পারবেন।</p>
 </header>
 
@@ -214,12 +214,12 @@
 <main>
   <div class="panels">
     <div class="card" data-frame="UPLOAD">
-      <h2>নতুন ছবি Upload করুন</h2>
+      <h2>নতুন ছবি আপলোড করুন</h2>
       <label for="fileInput">ছবি বেছে নিন</label>
       <input type="file" id="fileInput" accept="image/*" />
 
-      <label for="keywordsInput">কীওয়ার্ড (কমা দিয়ে আলাদা করুন, যেমনঃ রহিম, ফরিদপুর)</label>
-      <input type="text" id="keywordsInput" placeholder="মোবাইল/নাম/কীওয়ার্ড/ফ্রেম নম্বর" />
+      <label for="keywordsInput">কীওয়ার্ড (কমা দিয়ে আলাদা করুন)</label>
+      <input type="text" id="keywordsInput" placeholder="যেমনঃ নাম, মোবাইল, কীওয়ার্ড" />
 
       <div class="upload-btn-row">
         <button class="primary" id="uploadBtn">জমা দিন</button>
@@ -231,7 +231,7 @@
       <h2>ছবি খুঁজুন</h2>
       <label for="searchInput">ফ্রেম নাম্বার বা কীওয়ার্ড লিখুন</label>
       <div class="search-row">
-        <input type="search" id="searchInput" placeholder="মোবাইল/নাম/কীওয়ার্ড/ফ্রেম নম্বর" />
+        <input type="search" id="searchInput" placeholder="যেমনঃ নাম, মোবাইল, কীওয়ার্ড" />
         <button id="searchBtn">খুঁজুন</button>
       </div>
       <label style="margin-top:18px;">অথবা</label>
@@ -420,8 +420,7 @@
     term = term.trim();
     if (!term) { renderResults([]); return; }
 
-    const mode = /^\d+$/.test(term) ? "number" : "keyword";
-    const url = `${APPS_SCRIPT_URL}?mode=${mode}&term=${encodeURIComponent(term.toLowerCase())}`;
+    const url = `${APPS_SCRIPT_URL}?mode=search&term=${encodeURIComponent(term.toLowerCase())}`;
     const resp = await fetch(url);
     const data = await resp.json();
     renderResults(data.success ? data.results : []);
