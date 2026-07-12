@@ -222,7 +222,7 @@
       <span id="resultCount" class="mono"></span>
     </div>
     <div id="grid" class="grid"></div>
-    <div id="emptyMsg" class="empty" style="display:none;">এখনো কিছু পাওয়া যায়নি। উপরে থেকে খুঁজুন বা নতুন ছবি জমা দিন।</div>
+    <div id="emptyMsg" class="empty">উপরে থেকে ফ্রেম নাম্বার বা কীওয়ার্ড দিয়ে খুঁজুন, অথবা "সব ছবি দেখুন" চাপুন।</div>
   </section>
 </main>
 
@@ -302,7 +302,7 @@
 
       const a = document.createElement("a");
       a.href = blobUrl;
-      a.download = `frame-${String(link.dataset.num).padStart(4,"0")}.jpg`;
+      a.download = `FindPhoto Frame-${String(link.dataset.num).padStart(4,"0")}.jpg`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -389,7 +389,7 @@
   searchInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(searchInput.value); });
   showAllBtn.addEventListener("click", showAll);
 
-  if (!notConfigured) showAll();
+  // পেজ লোড হওয়ার সাথে সাথে কিছু দেখাবে না — ব্যবহারকারী সার্চ করলে বা "সব ছবি দেখুন" চাপলে তবেই ফলাফল আসবে
 </script>
 
 </body>
