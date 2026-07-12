@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FindPhoto Tools</title>
+<title>FindPhoto Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
@@ -68,6 +68,22 @@
   }
   header.hero p{
     color:var(--muted); max-width:520px; margin:0 auto; font-size:15px; line-height:1.7;
+  }
+
+  .stats-bar{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:1px;
+    max-width:760px; margin:0 auto; background:var(--border);
+    border:1px solid var(--border);
+  }
+  @media(min-width:640px){ .stats-bar{grid-template-columns:repeat(4,1fr);} }
+  .stat{
+    background:var(--panel); padding:18px 14px; text-align:center;
+  }
+  .stat .val{
+    font-family:'IBM Plex Mono',monospace; font-size:26px; color:var(--amber); font-weight:600;
+  }
+  .stat .lbl{
+    font-size:11.5px; color:var(--muted); margin-top:4px; letter-spacing:0.03em;
   }
 
   main{max-width:1040px; margin:0 auto; padding:44px 20px 100px;}
@@ -184,6 +200,13 @@
   <p>যেকেউ ছবি জমা রাখতে পারবেন এখানে, আর একটা নির্ধারিত <strong>ফ্রেম নাম্বার</strong> অথবা <strong>কীওয়ার্ড</strong> দিয়ে যেকেউ পরে সেটা খুঁজে ডাউনলোড করতে পারবেন।</p>
 </header>
 
+<div class="stats-bar">
+  <div class="stat"><div class="val" id="statTotalPhotos">—</div><div class="lbl">মোট ছবি</div></div>
+  <div class="stat"><div class="val" id="statUploadedToday">—</div><div class="lbl">আজ আপলোড</div></div>
+  <div class="stat"><div class="val" id="statTotalDownloads">—</div><div class="lbl">মোট ডাউনলোড</div></div>
+  <div class="stat"><div class="val" id="statDownloadsToday">—</div><div class="lbl">আজ ডাউনলোড</div></div>
+</div>
+
 <div id="configWarning" class="config-warning" style="display:none;">
   ⚠️ এই টুলটা এখনো চালু করা যায়নি — <code>index.html</code> ফাইলের শুরুর দিকে <code>IMGBB_API_KEY</code> ও <code>APPS_SCRIPT_URL</code> এখনো বসানো হয়নি। README.md ফাইলে ধাপে ধাপে সেটআপ নির্দেশনা দেওয়া আছে।
 </div>
@@ -227,7 +250,7 @@
 </main>
 
 <footer>
-  Frame Archive — একটা পাবলিক, ওপেন কমিউনিটি ফটো আর্কাইভ
+  FindPhoto — একটা পাবলিক, ওপেন কমিউনিটি ফটো আর্কাইভ
 </footer>
 
 <script type="module">
@@ -258,10 +281,29 @@
   const grid = document.getElementById("grid");
   const emptyMsg = document.getElementById("emptyMsg");
   const resultCount = document.getElementById("resultCount");
+  const statTotalPhotos = document.getElementById("statTotalPhotos");
+  const statUploadedToday = document.getElementById("statUploadedToday");
+  const statTotalDownloads = document.getElementById("statTotalDownloads");
+  const statDownloadsToday = document.getElementById("statDownloadsToday");
 
   function setStatus(msg, kind) {
     uploadStatus.textContent = msg;
     uploadStatus.className = "status" + (kind ? " " + kind : "");
+  }
+
+  async function loadStats() {
+    if (notConfigured) return;
+    try {
+      const resp = await fetch(`${APPS_SCRIPT_URL}?mode=stats`);
+      const data = await resp.json();
+      if (!data.success) return;
+      statTotalPhotos.textContent = data.stats.totalPhotos;
+      statUploadedToday.textContent = data.stats.uploadedToday;
+      statTotalDownloads.textContent = data.stats.totalDownloads;
+      statDownloadsToday.textContent = data.stats.downloadsToday;
+    } catch (err) {
+      console.error("stats load failed", err);
+    }
   }
 
   function renderResults(photos) {
@@ -307,6 +349,12 @@
       a.click();
       a.remove();
       URL.revokeObjectURL(blobUrl);
+
+      // ডাউনলোড লগ করা হচ্ছে (ব্যাকগ্রাউন্ডে, ব্যবহারকারীকে অপেক্ষা করাতে হবে না)
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "download", number: link.dataset.num })
+      }).then(loadStats).catch(() => {});
     } catch (err) {
       console.error(err);
       // fallback: imgbb ব্লক করলে বা fetch ব্যর্থ হলে নতুন ট্যাবে খুলে দিন
@@ -358,6 +406,7 @@
       setStatus(`জমা হয়েছে ✓ ফ্রেম নাম্বার: ${String(saveData.number).padStart(4,"0")}`, "ok");
       fileInput.value = "";
       keywordsInput.value = "";
+      loadStats();
     } catch (e) {
       console.error(e);
       setStatus("সমস্যা হয়েছে: " + e.message, "err");
@@ -390,6 +439,9 @@
   // showAllBtn এখন disabled — ক্লিক হ্যান্ডলার লাগানো হয়নি ইচ্ছাকৃতভাবে
 
   // পেজ লোড হওয়ার সাথে সাথে কিছু দেখাবে না — ব্যবহারকারী সার্চ করলে বা "সব ছবি দেখুন" চাপলে তবেই ফলাফল আসবে
+
+  loadStats();
+  setInterval(loadStats, 20000); // প্রতি ২০ সেকেন্ডে স্ট্যাটস রিফ্রেশ (লাইভ ফিল)
 </script>
 
 </body>
