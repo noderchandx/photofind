@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FindPhoto Tool</title>
+<title>FindPhoto Tools</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
@@ -195,8 +195,8 @@
       <label for="fileInput">ছবি বেছে নিন</label>
       <input type="file" id="fileInput" accept="image/*" />
 
-      <label for="keywordsInput">কীওয়ার্ড (কমা দিয়ে আলাদা করুন)</label>
-      <input type="text" id="keywordsInput" placeholder="যেমনঃ বিয়ে, রাজশাহী, পরিবার" />
+      <label for="keywordsInput">কীওয়ার্ড (কমা দিয়ে আলাদা করুন, যেমনঃ রহিম, ফরিদপুর)</label>
+      <input type="text" id="keywordsInput" placeholder="মোবাইল/নাম/কীওয়ার্ড/ফ্রেম নম্বর" />
 
       <div class="upload-btn-row">
         <button class="primary" id="uploadBtn">জমা দিন</button>
@@ -208,11 +208,11 @@
       <h2>ছবি খুঁজুন</h2>
       <label for="searchInput">ফ্রেম নাম্বার বা কীওয়ার্ড লিখুন</label>
       <div class="search-row">
-        <input type="search" id="searchInput" placeholder="যেমনঃ 014 অথবা রাজশাহী" />
+        <input type="search" id="searchInput" placeholder="মোবাইল/নাম/কীওয়ার্ড/ফ্রেম নম্বর" />
         <button id="searchBtn">খুঁজুন</button>
       </div>
       <label style="margin-top:18px;">অথবা</label>
-      <button id="showAllBtn" style="width:100%;">সব ছবি দেখুন</button>
+      <button id="showAllBtn" style="width:100%;" disabled title="বন্ধ করা আছে">সব ছবি দেখুন</button>
     </div>
   </div>
 
@@ -227,7 +227,7 @@
 </main>
 
 <footer>
-  FindPhoto — একটা পাবলিক, ওপেন কমিউনিটি ফটো আর্কাইভ
+  Frame Archive — একটা পাবলিক, ওপেন কমিউনিটি ফটো আর্কাইভ
 </footer>
 
 <script type="module">
@@ -387,7 +387,7 @@
 
   searchBtn.addEventListener("click", () => runSearch(searchInput.value));
   searchInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(searchInput.value); });
-  showAllBtn.addEventListener("click", showAll);
+  // showAllBtn এখন disabled — ক্লিক হ্যান্ডলার লাগানো হয়নি ইচ্ছাকৃতভাবে
 
   // পেজ লোড হওয়ার সাথে সাথে কিছু দেখাবে না — ব্যবহারকারী সার্চ করলে বা "সব ছবি দেখুন" চাপলে তবেই ফলাফল আসবে
 </script>
